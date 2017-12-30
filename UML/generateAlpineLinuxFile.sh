@@ -22,7 +22,7 @@ fi
 FILE_NAME="${WORK_DIR}/alpine_file"
 MOUNT_DIR="${WORK_DIR}/alpine_entry"
 TMPRY_DIR="${WORK_DIR}/tmp"
-LABELNAME="ROOT"
+LABELNAME="ALPINE_ENTRY"
 
 mkdir ${WORK_DIR}
 cd    ${WORK_DIR}  # 假如脚本在当前目录生成了临时文件, 那么可以遗留在脚本的工作目录.
