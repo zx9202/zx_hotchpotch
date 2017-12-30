@@ -19,6 +19,7 @@ if [ -d ${WORK_DIR} ] || [ -f ${WORK_DIR} ]; then
    exit 1
 fi
 
+FILE_SIZE=150
 FILE_NAME="${WORK_DIR}/alpine_file"
 MOUNT_DIR="${WORK_DIR}/alpine_entry"
 TMPRY_DIR="${WORK_DIR}/tmp"
@@ -33,8 +34,8 @@ mkdir ${TMPRY_DIR}
 # 创建一个空镜像, 并打上${LABELNAME}的标签(方便写/etc/fstab文件)
 function CreateFileSystem(){
 
-    # 创建一个大小为150MB的名为${FILE_NAME}的空文件
-    dd  if=/dev/zero  of=${FILE_NAME}  bs=1M  count=150
+    # 创建一个空文件, 文件名为${FILE_NAME}, 文件大小为${FILE_SIZE}MB
+    dd  if=/dev/zero  of=${FILE_NAME}  bs=1M  count=${FILE_SIZE}
 
     # 在${FILE_NAME}上创建ext4格式的文件系统, 并将文件系统的volume标签设置为${LABELNAME}
     mkfs.ext4  -L ${LABELNAME}  ${FILE_NAME}
