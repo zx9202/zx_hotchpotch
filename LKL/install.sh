@@ -168,7 +168,7 @@ EOF
 
 
 # 目前(2017-12-30)文件还是91yun的, 我计划后面自己编译一个倒腾一下, 该计划尚未实施.
-wget --no-check-certificate https://raw.githubusercontent.com/zx9202/zx_hotchpotch/master/lkl/liblkl-hijack.so
+wget --no-check-certificate https://raw.githubusercontent.com/zx9202/zx_hotchpotch/master/LKL/liblkl-hijack.so
 
 # LKL hijack library 的老式的、环境变量方式的配置
 cat > /root/lkl/lkl.sh<<-EOF

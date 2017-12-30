@@ -14,4 +14,4 @@
 
 + install.sh  
   修改自 91yun_uml_lkl_install.sh  
-  地址: https://raw.githubusercontent.com/zx9202/zx_hotchpotch/master/lkl/install.sh
+  地址: https://raw.githubusercontent.com/zx9202/zx_hotchpotch/master/LKL/install.sh
