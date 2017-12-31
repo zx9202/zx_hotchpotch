@@ -9,13 +9,13 @@
 
 
 if [[ $EUID -ne 0 ]]; then
-   echo "[ERROR]:${LINENO}, You must run it as root." 1>&2
+   echo "[ERROR]:${LINENO}, You must run the script with root privileges." 1>&2
    exit 1
 fi
 
 WORK_DIR="${HOME}/alpine_linux_tmp"
 if [ -d ${WORK_DIR} ] || [ -f ${WORK_DIR} ]; then
-   echo "[ERROR]:${LINENO}, ${WORK_DIR} already exists." 1>&2
+   echo "[ERROR]:${LINENO}, Working directory already exists." 1>&2
    exit 1
 fi
 
@@ -26,14 +26,13 @@ TMPRY_DIR="${WORK_DIR}/tmp"
 LABELNAME="ALPINE_ENTRY"
 
 mkdir ${WORK_DIR}
-cd    ${WORK_DIR}  # 假如脚本在当前目录生成了临时文件, 那么可以遗留在脚本的工作目录.
+cd    ${WORK_DIR}  # 假如脚本在当前目录生成了临时文件, 那么可以遗留在${WORK_DIR}里面.
 mkdir ${MOUNT_DIR}
 mkdir ${TMPRY_DIR}
 
 
 # 创建一个空镜像, 并打上${LABELNAME}的标签(方便写/etc/fstab文件)
 function CreateFileSystem(){
-
     # 创建一个空文件, 文件名为${FILE_NAME}, 文件大小为${FILE_SIZE}MB
     dd  if=/dev/zero  of=${FILE_NAME}  bs=1M  count=${FILE_SIZE}
 
@@ -47,15 +46,19 @@ CreateFileSystem
 mount  -o loop  ${FILE_NAME}  ${MOUNT_DIR}
 
 
-function RepoAndApkToolsStaticUrl(){
+# 计算${LATEST_STABLE}和${SPECIFIC_REPO}和${APK_T__S__URL}的URL.
+function CalcRepoAndApkToolsStaticUrl(){
     local REL="v3.5"
     local ARCH=$(uname -m)
-    REPO="http://nl.alpinelinux.org/alpine/${REL}/main"
-    local APK_INDEX_URL="${REPO}/${ARCH}/APKINDEX.tar.gz"
+
+    LATEST_STABLE="http://dl-cdn.alpinelinux.org/alpine/latest-stable/main"
+    SPECIFIC_REPO="http://dl-cdn.alpinelinux.org/alpine/${REL}/main"
+
+    local APK_INDEX_URL="${SPECIFIC_REPO}/${ARCH}/APKINDEX.tar.gz"
     local APKV=$(curl -s ${APK_INDEX_URL} | tar -Oxz | grep -a '^P:apk-tools-static$' -A1 | tail -n1 | cut -d: -f2)
-    APK_T__S__URL="${REPO}/${ARCH}/apk-tools-static-${APKV}.apk"
+    APK_T__S__URL="${SPECIFIC_REPO}/${ARCH}/apk-tools-static-${APKV}.apk"
 }
-RepoAndApkToolsStaticUrl
+CalcRepoAndApkToolsStaticUrl
 
 
 # 下载相应的"apk tool", 然后通过它, 把基本的系统写入到空镜像中
@@ -70,10 +73,11 @@ function WriteBasicDataToImage(){
     # --root DIR          Install packages to DIR
     # --initdb            没有找到它的说明, 猜测为第一作者写错了, 同时我没有去掉它.
     # add                 Add PACKAGEs to 'world' and install (or upgrade) them, while ensuring that all dependencies are met
-    ${TMPRY_DIR}/sbin/apk.static  --repository ${REPO}  --update-cache  --allow-untrusted  --root ${MOUNT_DIR} --initdb add alpine-base
+    ${TMPRY_DIR}/sbin/apk.static  --repository ${SPECIFIC_REPO}  --update-cache  --allow-untrusted  --root ${MOUNT_DIR} --initdb add alpine-base
     
     # 好像是,设置版本库的URL.
-    printf '%s\n' ${REPO} > ${MOUNT_DIR}/etc/apk/repositories
+    printf  '%s\n' ${LATEST_STABLE}  >  ${MOUNT_DIR}/etc/apk/repositories
+    printf  '%s\n' ${SPECIFIC_REPO}  >  ${MOUNT_DIR}/etc/apk/repositories
 }
 WriteBasicDataToImage
 
@@ -91,6 +95,7 @@ EOF
 # 卸载镜像
 umount ${MOUNT_DIR}
 
-echo "#====================================#"
-echo "#         FINISH, ALL DONE           #"
-echo "#====================================#"
+echo "#==========================================================#"
+echo "#  FINISH, ALL DONE                                        #"
+echo "#  If no error occurred, then the file has been generated  #"
+echo "#==========================================================#"
