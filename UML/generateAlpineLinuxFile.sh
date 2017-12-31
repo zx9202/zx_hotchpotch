@@ -106,15 +106,15 @@ EOF
 cat > ${MOUNT_DIR}/etc/network/interfaces <<-EOF
 # interfaces(5) file used by ifup(8) and ifdown(8)
 #============================================================#
-# 为接口eth0设置动态IP
-# auto eth0               # 让网卡开机自动挂载
-# iface eth0 inet dhcp    # 自动获取IP
-# 为接口eth0设置静态IP
+# ========== set dynamic IP
+# auto eth0               # identify physical interface, to be brought up when system boot.
+# iface eth0 inet dhcp    # Dynamic Host Configuration Protocol
+# ========== set static IP
 # auto eth0
-# iface eth0 inet static         # 设置静态IP
-#         address 10.0.0.2       # 设置IP地址
-#         netmask 255.255.255.0  # 设置子网掩码(请根据实际情况计算)
-#         gateway 10.0.0.1       # 设置网关
+# iface eth0 inet static
+#         address 10.0.0.2
+#         netmask 255.255.255.0
+#         gateway 10.0.0.1
 #============================================================#
 
 auto lo
