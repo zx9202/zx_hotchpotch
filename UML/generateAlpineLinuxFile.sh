@@ -50,9 +50,10 @@ mount  -o loop  ${FILE_NAME}  ${MOUNT_DIR}
 function CalcRepoAndApkToolsStaticUrl(){
     local REL="v3.5"
     local ARCH=$(uname -m)
-
+    
     LATEST_STABLE="http://dl-cdn.alpinelinux.org/alpine/latest-stable/main"
     SPECIFIC_REPO="http://dl-cdn.alpinelinux.org/alpine/${REL}/main"
+    COMMUNITYREPO="http://dl-cdn.alpinelinux.org/alpine/${REL}/community"
 
     local APK_INDEX_URL="${SPECIFIC_REPO}/${ARCH}/APKINDEX.tar.gz"
     local APKV=$(curl -s ${APK_INDEX_URL} | tar -Oxz | grep -a '^P:apk-tools-static$' -A1 | tail -n1 | cut -d: -f2)
@@ -76,19 +77,51 @@ function WriteBasicDataToImage(){
     ${TMPRY_DIR}/sbin/apk.static  --repository ${SPECIFIC_REPO}  --update-cache  --allow-untrusted  --root ${MOUNT_DIR} --initdb add alpine-base
     
     # 好像是,设置版本库的URL.
-    printf  '%s\n' ${LATEST_STABLE}  >  ${MOUNT_DIR}/etc/apk/repositories
-    printf  '%s\n' ${SPECIFIC_REPO}  >  ${MOUNT_DIR}/etc/apk/repositories
+    printf  '%s\n' ${LATEST_STABLE}  >   ${MOUNT_DIR}/etc/apk/repositories
+    printf  '%s\n' ${SPECIFIC_REPO}  >>  ${MOUNT_DIR}/etc/apk/repositories
+    printf  '%s\n' ${COMMUNITYREPO}  >>  ${MOUNT_DIR}/etc/apk/repositories
 }
 WriteBasicDataToImage
 
 
 # 往镜像里写入分区表
-cat > ${MOUNT_DIR}/etc/fstab<<-EOF
+cat > ${MOUNT_DIR}/etc/fstab <<-EOF
 #
 # /etc/fstab: static file system information
 #
 # <file system>      <dir>   <type>   <options>   <dump>   <pass>
 LABEL=${LABELNAME}   /       auto     defaults    1        1
+EOF
+
+
+# 往镜像里写入dns配置文件
+cat > ${MOUNT_DIR}/etc/resolv.conf <<-EOF
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 114.114.114.114
+EOF
+
+
+# 往镜像里写入网卡配置文件
+cat > ${MOUNT_DIR}/etc/network/interfaces <<-EOF
+# interfaces(5) file used by ifup(8) and ifdown(8)
+#============================================================#
+# 为接口eth0设置动态IP
+# auto eth0               # 让网卡开机自动挂载
+# iface eth0 inet dhcp    # 自动获取IP
+# 为接口eth0设置静态IP
+# auto eth0
+# iface eth0 inet static         # 设置静态IP
+#         address 10.0.0.2       # 设置IP地址
+#         netmask 255.255.255.0  # 设置子网掩码(请根据实际情况计算)
+#         gateway 10.0.0.1       # 设置网关
+#============================================================#
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
 EOF
 
 
