@@ -148,7 +148,7 @@ EOF
     cat                               > ${MOUNT_DIR}/etc/shadowsocks-go/shadowsocks.json <<-EOF
 {
     "server":"0.0.0.0",
-    "server_port":9999,
+    "server_port":65500,
     "password":"shadowsocks-server-go",
     "timeout":300,
     "method":"aes-256-cfb",
