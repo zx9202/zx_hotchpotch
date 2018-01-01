@@ -168,6 +168,7 @@ EOF
 echo "log_for_test: \$(date)"  >  /log.log
 # swap on
 if [ \$(wc -l /proc/swaps | cut -d" " -f1) -eq 1 ]; then
+    echo "operate swap file"  >>  /log.log
     /sbin/mkswap  /swapfile
     /sbin/swapon  /swapfile
 fi
