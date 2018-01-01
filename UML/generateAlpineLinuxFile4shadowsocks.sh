@@ -143,6 +143,7 @@ EOF
     SS_URL="https://github.com/shadowsocks/shadowsocks-go/releases/download/1.2.1/shadowsocks-server.tar.gz"
     mkdir                               ${MOUNT_DIR}/etc/shadowsocks-go
     wget -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/shadowsocks-go/  shadowsocks-server
+    if [ $? -ne 0 ]; then echo "[ERROR] Failed when dealing with shadowsocks-go !!!" 1>&2 ; fi
     # 准备 shadowsocks.json
     cat                               > ${MOUNT_DIR}/etc/shadowsocks-go/shadowsocks.json <<-EOF
 {
@@ -155,17 +156,26 @@ EOF
 }
 EOF
     # 创建一定大小的交换文件
-    dd if=/dev/zero of=/swapfile bs=1M count=64
-    chmod 600 /swapfile
+    dd if=/dev/zero of=${MOUNT_DIR}/swapfile bs=1M count=64
+    chmod 600          ${MOUNT_DIR}/swapfile
     # 开机自启动脚本
-    cat > ${MOUNT_DIR}/etc/local.d/shadowsocks.start <<-EOF
+    # 命令 rc-update add local default 相当于 ln -s  /etc/init.d/local  /etc/runlevels/default/
+    # 打开 /etc/init.d/local 文件, 可以知道, 它会执行所有的 /etc/local.d/*.start 文件
+    # (不建议) 我们把 /etc/init.d/local 拷贝到 /etc/runlevels/default/ 下面 (不建议)
+    # (不建议) 然后在 /etc/local.d/ 下面放置要开机启动的脚本, 也可以达到相同的作用
+    cp -p  ${MOUNT_DIR}/etc/init.d/local  ${MOUNT_DIR}/etc/runlevels/default/
+    cat >  ${MOUNT_DIR}/etc/local.d/shadowsocks.start <<-EOF
+echo "log_for_test: \$(date)"  >  /log.log
 # swap on
-/sbin/mkswap /swapfile
-/sbin/swapon /swapfile
+if [ \$(wc -l /proc/swaps | cut -d" " -f1) -eq 1 ]; then
+    /sbin/mkswap  /swapfile
+    /sbin/swapon  /swapfile
+fi
 # restart net
 sleep 3
 /etc/init.d/networking restart
 # start ss
+for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
 /usr/bin/nohup  /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json  >  /dev/null 2>&1  &
 EOF
     chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.start
