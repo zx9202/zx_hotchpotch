@@ -1,11 +1,11 @@
 #! /bin/bash
-#=================================================================#
-# 注意: 脚本需要以 UTF-8 编码, 并以 LF 结尾.                      #
-# yum install  curl
-#=================================================================#
+#======================================================================#
+# 注意: 脚本需要以 UTF-8 编码, 并以 LF 结尾.
+# yum -y install curl wget
+#======================================================================#
 # 此脚本是根据"OpenVZ下开启BBR拥塞控制"翻写的.
 # 网址: https://www.fanyueciyuan.info/jsxj/OpenVZ_BBR_UML_Alpine_Linux.html
-#=================================================================#
+#======================================================================#
 
 
 if [[ $EUID -ne 0 ]]; then
@@ -112,9 +112,10 @@ cat > ${MOUNT_DIR}/etc/network/interfaces <<-EOF
 # ========== set static IP
 # auto eth0
 # iface eth0 inet static
-#         address 10.0.0.2
+#         address 192.168.255.2
 #         netmask 255.255.255.0
-#         gateway 10.0.0.1
+#         gateway 192.168.255.1
+# in this case, (address & netmask) => (192.168.255.2 & 255.255.255.0) => 192.168.255.0
 #============================================================#
 
 auto lo
@@ -134,9 +135,9 @@ auto  lo
 iface lo inet loopback
 auto  eth0
 iface eth0 inet static
-          address 10.0.0.2
+          address 192.168.255.2
           netmask 255.255.255.0
-          gateway 10.0.0.1
+          gateway 192.168.255.1
 EOF
     # 准备 shadowsocks-go
     SS_URL="https://github.com/shadowsocks/shadowsocks-go/releases/download/1.2.1/shadowsocks-server.tar.gz"
