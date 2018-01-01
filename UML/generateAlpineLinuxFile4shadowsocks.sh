@@ -125,13 +125,14 @@ iface eth0 inet dhcp
 EOF
 
 
-# 为ss定制系统
+# 为 shadowsocks 定制系统, 如果你不想定制它, 不调用该函数即可
 function CustomizeSystemForShadowsocks(){
     # 指定网卡的信息
     cat > ${MOUNT_DIR}/etc/network/interfaces <<-EOF
 # interfaces(5) file used by ifup(8) and ifdown(8)
-auto lo
+auto  lo
 iface lo inet loopback
+auto  eth0
 iface eth0 inet static
           address 10.0.0.2
           netmask 255.255.255.0
@@ -152,16 +153,22 @@ EOF
     "fast_open": false
 }
 EOF
+    # 创建一定大小的交换文件
+    dd if=/dev/zero of=/swapfile bs=1M count=64
+    chmod 600 /swapfile
     # 开机自启动脚本
-    cat >    ${MOUNT_DIR}/etc/local.d/shadowsocks.start <<-EOF
+    cat > ${MOUNT_DIR}/etc/local.d/shadowsocks.start <<-EOF
+# swap on
+/sbin/mkswap /swapfile
+/sbin/swapon /swapfile
 # restart net
 sleep 3
 /etc/init.d/networking restart
 # start ss
-/usr/bin/nohup  /etc/shadowsocks-go/shadowsocks-serverusr -c /etc/shadowsocks-go/shadowsocks.json > /dev/null 2>&1 &
+/usr/bin/nohup  /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json  >  /dev/null 2>&1  &
 EOF
     chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.start
-    # 为ss优化系统配置
+    # 为 shadowsocks 优化系统配置
     cat > ${MOUNT_DIR}/etc/sysctl.conf <<-EOF
 # max open files
 fs.file-max = 51200
@@ -201,7 +208,7 @@ net.ipv4.tcp_rmem = 4096 87380 67108864
 net.ipv4.tcp_wmem = 4096 65536 67108864
 # turn on path MTU discovery
 net.ipv4.tcp_mtu_probing = 1
-#BBR
+# BBR
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 EOF
@@ -212,7 +219,7 @@ CustomizeSystemForShadowsocks
 # 卸载镜像
 umount ${MOUNT_DIR}
 
-echo "#==========================================================#"
-echo "#  FINISH, ALL DONE                                        #"
-echo "#  If no error occurred, then the file has been generated  #"
-echo "#==========================================================#"
+echo "#===============================================================#"
+echo "#  FINISH, ALL DONE                                             #"
+echo "#  If there is no error, then the file is ready for normal use  #"
+echo "#===============================================================#"

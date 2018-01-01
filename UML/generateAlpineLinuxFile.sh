@@ -4,7 +4,7 @@
 # yum install  curl
 #=================================================================#
 # 此脚本是根据"OpenVZ下开启BBR拥塞控制"翻写的.
-# 网址: https://www.fanyueciyuan.info/jsxj/OpenVZ_BBR_UML_Alpine_Linux.html/comment-page-1
+# 网址: https://www.fanyueciyuan.info/jsxj/OpenVZ_BBR_UML_Alpine_Linux.html
 #=================================================================#
 
 
@@ -19,7 +19,7 @@ if [ -d ${WORK_DIR} ] || [ -f ${WORK_DIR} ]; then
    exit 1
 fi
 
-FILE_SIZE=150
+FILE_SIZE=200
 FILE_NAME="${WORK_DIR}/alpine_file"
 MOUNT_DIR="${WORK_DIR}/alpine_entry"
 TMPRY_DIR="${WORK_DIR}/tmp"
@@ -128,7 +128,7 @@ EOF
 # 卸载镜像
 umount ${MOUNT_DIR}
 
-echo "#==========================================================#"
-echo "#  FINISH, ALL DONE                                        #"
-echo "#  If no error occurred, then the file has been generated  #"
-echo "#==========================================================#"
+echo "#===============================================================#"
+echo "#  FINISH, ALL DONE                                             #"
+echo "#  If there is no error, then the file is ready for normal use  #"
+echo "#===============================================================#"
