@@ -7,16 +7,21 @@
 # 网址: https://www.fanyueciyuan.info/jsxj/OpenVZ_BBR_UML_Alpine_Linux.html
 #======================================================================#
 
+wget -q -O- http://www.gov.cn/ > /dev/null  &&  curl -s http://www.gov.cn/ > /dev/null
+if [ $? -ne 0 ]; then
+    echo "[ERROR]:${LINENO}, Please install wget,curl software." 1>&2
+    exit 1
+fi
 
 if [[ $EUID -ne 0 ]]; then
-   echo "[ERROR]:${LINENO}, You must run the script with root privileges." 1>&2
-   exit 1
+    echo "[ERROR]:${LINENO}, You must run the script with root privileges." 1>&2
+    exit 1
 fi
 
 WORK_DIR="${HOME}/alpine_linux_tmp"
 if [ -d ${WORK_DIR} ] || [ -f ${WORK_DIR} ]; then
-   echo "[ERROR]:${LINENO}, Working directory already exists." 1>&2
-   exit 1
+    echo "[ERROR]:${LINENO}, Working directory already exists." 1>&2
+    exit 1
 fi
 
 FILE_SIZE=200
