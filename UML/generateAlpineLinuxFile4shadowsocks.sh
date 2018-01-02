@@ -150,8 +150,8 @@ iface eth0 inet static
 EOF
     # 准备 shadowsocks-go
     SS_URL="https://github.com/shadowsocks/shadowsocks-go/releases/download/1.2.1/shadowsocks-server.tar.gz"
-    mkdir                               ${MOUNT_DIR}/etc/shadowsocks-go
-    wget -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/shadowsocks-go/  shadowsocks-server
+    mkdir                                  ${MOUNT_DIR}/etc/shadowsocks-go
+    wget -c -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/shadowsocks-go/  shadowsocks-server
     if [ $? -ne 0 ]; then echo "[ERROR] Failed when dealing with shadowsocks-go !!!" 1>&2 ; fi
     # 准备 shadowsocks.json
     cat                               > ${MOUNT_DIR}/etc/shadowsocks-go/shadowsocks.json <<-EOF
