@@ -174,21 +174,32 @@ EOF
     # (不建议) 然后在 /etc/local.d/ 下面放置要开机启动的脚本, 也可以产生相同的作用
     cp -p  ${MOUNT_DIR}/etc/init.d/local  ${MOUNT_DIR}/etc/runlevels/default/
     cat >  ${MOUNT_DIR}/etc/local.d/shadowsocks.start <<-EOF
-echo "log_for_test: \$(date)"  >  /log.log
 # swap on
-if [ \$(wc -l /proc/swaps | cut -d" " -f1) -eq 1 ]; then
-    echo "operate swap file"  >>  /log.log
-    /sbin/mkswap  /swapfile
-    /sbin/swapon  /swapfile
-fi
-# restart net
-sleep 3
-/etc/init.d/networking restart
-# start ss
-for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
-/usr/bin/nohup  /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json  >  /dev/null 2>&1  &
+/sbin/mkswap /swapfile
+/sbin/swapon /swapfile
+# fix net and start ss from another script
+/etc/local.d/shadowsocks.sh &
 EOF
     chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.start
+    # 系统启动后, 此脚本用于重置网络并启动程序
+    cat    > ${MOUNT_DIR}/etc/local.d/shadowsocks.sh <<-EOF
+LOG_FILE=/log.log
+cat /dev/null  >  \${LOG_FILE}
+for i in \$(seq 60); do
+    /etc/init.d/networking restart > /dev/null 2>&1
+    D_I=\$(ip route list 0/0 | sort -k 7 | head -n 1 | sed -n 's/^default.* dev \([^ ]*\).*/\1/p')
+    echo "PID=\$\$, i=\${i}, \$(date), D_I=\${D_I}" >> \${LOG_FILE}
+    if [ "\${D_I}" = "" ]; then
+        sleep 2
+    else
+        for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
+        /usr/bin/nohup /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json > /dev/null 2>&1 &
+        break
+    fi
+done
+echo "PID=\$\$, i=\${i}, \$(date), D_I=\${D_I}, will exit..." >> \${LOG_FILE}
+EOF
+    chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.sh
     # 为 shadowsocks 优化系统配置
     cat > ${MOUNT_DIR}/etc/sysctl.conf <<-EOF
 # max open files
