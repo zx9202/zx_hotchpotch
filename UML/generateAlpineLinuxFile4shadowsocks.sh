@@ -53,7 +53,7 @@ mount  -o loop  ${FILE_NAME}  ${MOUNT_DIR}
 
 # 计算${LATEST_STABLE}和${SPECIFIC_REPO}和${APK_T__S__URL}的URL.
 function CalcRepoAndApkToolsStaticUrl(){
-    local REL="v3.5"
+    local REL="v3.7"
     local ARCH=$(uname -m)
     
     LATEST_STABLE="http://dl-cdn.alpinelinux.org/alpine/latest-stable/main"
