@@ -24,7 +24,7 @@ if [ -d ${WORK_DIR} ] || [ -f ${WORK_DIR} ]; then
     exit 1
 fi
 
-FILE_SIZE=200
+FILE_SIZE=500
 FILE_NAME="${WORK_DIR}/alpine_file"
 MOUNT_DIR="${WORK_DIR}/alpine_entry"
 TMPRY_DIR="${WORK_DIR}/tmp"
