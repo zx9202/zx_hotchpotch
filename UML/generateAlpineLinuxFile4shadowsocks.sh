@@ -94,6 +94,10 @@ LABEL=${LABELNAME}   /       auto     defaults    1        1
 EOF
 
 
+# 修改时区, China Standard Time (CST) is 8 hours ahead of Coordinated Universal Time (UTC).
+sed -i '1i export TZ=CST-8'  ${MOUNT_DIR}/etc/profile
+
+
 # 往镜像里写入dns配置文件
 cat > ${MOUNT_DIR}/etc/resolv.conf <<-EOF
 nameserver 8.8.8.8
@@ -162,7 +166,7 @@ EOF
     # 命令 rc-update add local default 相当于 ln -s  /etc/init.d/local  /etc/runlevels/default/
     # 打开 /etc/init.d/local 文件, 可以知道, 它会执行所有的 /etc/local.d/*.start 文件
     # (不建议) 我们把 /etc/init.d/local 拷贝到 /etc/runlevels/default/ 下面 (不建议)
-    # (不建议) 然后在 /etc/local.d/ 下面放置要开机启动的脚本, 也可以达到相同的作用
+    # (不建议) 然后在 /etc/local.d/ 下面放置要开机启动的脚本, 也可以产生相同的作用
     cp -p  ${MOUNT_DIR}/etc/init.d/local  ${MOUNT_DIR}/etc/runlevels/default/
     cat >  ${MOUNT_DIR}/etc/local.d/shadowsocks.start <<-EOF
 echo "log_for_test: \$(date)"  >  /log.log
