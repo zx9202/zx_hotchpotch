@@ -121,10 +121,10 @@ cat > ${MOUNT_DIR}/etc/network/interfaces <<-EOF
 # ========== set static IP
 # auto eth0
 # iface eth0 inet static
-#         address 192.168.255.2
+#         address 192.168.255.254
 #         netmask 255.255.255.0
 #         gateway 192.168.255.1
-# in this case, (address & netmask) => (192.168.255.2 & 255.255.255.0) => 192.168.255.0
+# in this case, (address & netmask) => (192.168.255.254 & 255.255.255.0) => 192.168.255.0
 #============================================================#
 
 auto lo
@@ -144,9 +144,9 @@ auto  lo
 iface lo inet loopback
 auto  eth0
 iface eth0 inet static
-          address 192.168.255.2
-          netmask 255.255.255.0
-          gateway 192.168.255.1
+        address 192.168.255.254
+        netmask 255.255.255.0
+        gateway 192.168.255.1
 EOF
     # 准备 shadowsocks-go
     SS_URL="https://github.com/shadowsocks/shadowsocks-go/releases/download/1.2.1/shadowsocks-server.tar.gz"
@@ -154,14 +154,13 @@ EOF
     wget -c -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/shadowsocks-go/  shadowsocks-server
     if [ $? -ne 0 ]; then echo "[ERROR] Failed when dealing with shadowsocks-go !!!" 1>&2 ; fi
     # 准备 shadowsocks.json
-    cat                               > ${MOUNT_DIR}/etc/shadowsocks-go/shadowsocks.json <<-EOF
+    cat                                  > ${MOUNT_DIR}/etc/shadowsocks-go/shadowsocks.json <<-EOF
 {
     "server":"0.0.0.0",
-    "server_port":65500,
-    "password":"shadowsocks-server-go",
-    "timeout":300,
-    "method":"aes-256-cfb",
-    "fast_open": false
+    "server_port":65535,
+    "password":"shadowsocks-go",
+    "method":"rc4-md5",
+    "timeout":300
 }
 EOF
     # 创建一定大小的交换文件
@@ -187,17 +186,17 @@ LOG_FILE=/log.log
 cat /dev/null  >  \${LOG_FILE}
 for IDX in \$(seq 10); do
     /etc/init.d/networking restart > /dev/null 2>&1
-    D_I=\$(ip route show exact 0/0 | sort -k 7 | head -n 1 | sed -n 's/^default.* dev \([^ ]*\).*/\1/p')
-    echo "PID=\$\$, IDX=\${IDX}, \$(date), D_I=\${D_I}" >> \${LOG_FILE}
-    if [ "\${D_I}" = "" ]; then
-        sleep 2
-    else
+    DRC=\$(ip route show exact 0/0 | grep -E "^default.* dev [^ ]+" --count)
+    echo "PID=\$\$, IDX=\${IDX}, \$(date), DRC=\${DRC}" >> \${LOG_FILE}
+    if [ \${DRC} -gt 0 ]; then
         for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
         /usr/bin/nohup /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json > /dev/null 2>&1 &
         break
+    else
+        sleep 2
     fi
 done
-echo "PID=\$\$, IDX=\${IDX}, \$(date), D_I=\${D_I}, will exit..." >> \${LOG_FILE}
+echo "PID=\$\$, IDX=\${IDX}, \$(date), DRC=\${DRC}, will exit..." >> \${LOG_FILE}
 EOF
     chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.sh
     # 为 shadowsocks 优化系统配置
