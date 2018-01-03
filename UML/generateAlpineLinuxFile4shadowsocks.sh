@@ -187,7 +187,7 @@ LOG_FILE=/log.log
 cat /dev/null  >  \${LOG_FILE}
 for IDX in \$(seq 10); do
     /etc/init.d/networking restart > /dev/null 2>&1
-    D_I=\$(ip route list 0/0 | sort -k 7 | head -n 1 | sed -n 's/^default.* dev \([^ ]*\).*/\1/p')
+    D_I=\$(ip route show exact 0/0 | sort -k 7 | head -n 1 | sed -n 's/^default.* dev \([^ ]*\).*/\1/p')
     echo "PID=\$\$, IDX=\${IDX}, \$(date), D_I=\${D_I}" >> \${LOG_FILE}
     if [ "\${D_I}" = "" ]; then
         sleep 2
