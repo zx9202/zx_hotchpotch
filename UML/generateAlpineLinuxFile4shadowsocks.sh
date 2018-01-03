@@ -186,7 +186,7 @@ LOG_FILE=/log.log
 cat /dev/null  >  \${LOG_FILE}
 for IDX in \$(seq 10); do
     /etc/init.d/networking restart > /dev/null 2>&1
-    DRC=\$(ip route show exact 0/0 | grep -E "^default.* dev [^ ]+" --count)
+    DRC=\$(ip route show exact 0/0 | grep -E "^default.* dev [^ ]+" -c)
     echo "PID=\$\$, IDX=\${IDX}, \$(date), DRC=\${DRC}" >> \${LOG_FILE}
     if [ \${DRC} -gt 0 ]; then
         for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
