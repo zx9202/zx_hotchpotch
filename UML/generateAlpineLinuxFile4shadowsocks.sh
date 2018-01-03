@@ -176,7 +176,7 @@ EOF
 # swap on
 /sbin/mkswap /swapfile
 /sbin/swapon /swapfile
-# fix net and start ss from another script
+# fix net and start ss by another script
 /etc/local.d/shadowsocks.sh &
 EOF
     chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.start
