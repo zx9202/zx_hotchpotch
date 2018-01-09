@@ -4,11 +4,11 @@ userName="t1"
 userPassword="t1pwd"
 gidGroup="root"
 userdelPermission=1  # 如果用户存在,允许删除这个用户.
-sshPort="22 54321"   # 所有想开启的SSH端口,以空格间隔.
+sshPorts="22 22222"  # 所有想开启的SSH端口,以空格间隔.
 zoneInfoFilePath="/usr/share/zoneinfo/Asia/Shanghai"
 ################################################################
 
-# 检查依赖和其他条件.
+# 检查依赖和其他条件(无依赖).
 CheckDependenciesAndSoOn()
 {
     local checkVal=0
@@ -34,7 +34,7 @@ AddUserAndUpdatePassword()
     local userdelPermission="$4"
     
     if [ -z "${userName}" ] || [ -z "${userPassword}" ]; then
-        echo "userName(${userName}) or userPassword(${userPassword}) is empty, will terminate."
+        echo "userName(${userName}) and/or userPassword(${userPassword}) is empty, will terminate."
         return 1
     fi
     
@@ -56,7 +56,7 @@ AddUserAndUpdatePassword()
     fi
     
     local cmd=
-    if [ -n "${gidGroup}" ]; then    # 通过 man test 可知, -n STRING  the length of STRING is nonzero
+    if [ -n "${gidGroup}" ]; then    # 执行"man test"可知, -n STRING  the length of STRING is nonzero
         cmd="useradd ${userName} -g ${gidGroup}"
     else
         cmd="useradd ${userName}"
@@ -78,7 +78,7 @@ AddUserAndUpdatePassword()
     return 0
 }
 
-# 用 visudo 校验 sudoers 的合法性.
+# 用visudo校验sudoers的合法性(无依赖).
 VisudoCheck()
 {
     # 执行"man visudo"然后在"FILES"部分可以看到它涉及的文件.
@@ -104,7 +104,7 @@ VisudoCheck()
     return 0
 }
 
-# 给一个用户增加最高的 sudo 权限.
+# 给一个用户增加最高的sudo权限(依赖其他函数).
 AddSudoPermission()
 {
     local functionName="AddSudoPermission"
@@ -124,12 +124,12 @@ AddSudoPermission()
     if [ $? -ne 0 ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
     
     # TODO: 如果sed命令直接失败的话,我们是不知道的,此时返回的结果仅仅是wc命令的结果.
-    local  cntRoot=$(sed -r -n "s/${rootExactPattern}/&/p" "${fileName}" | wc -l)
+    local  cntRoot=$(sed -n -r "s/${rootExactPattern}/&/p" "${fileName}" | wc -l)
     if [ ${cntRoot} -ne 1 ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
     
     # 模糊匹配只有可能比精确匹配多,如果多了,说明此文件可能被高度自定义,这个时候就不要用脚本修改啦.
-    local cntExact=$(sed -r -n  "/${userExactPattern}/p"   "${fileName}" | wc -l)
-    local cntFuzzy=$(sed -r -n  "/${userFuzzyPattern}/p"   "${fileName}" | wc -l)
+    local cntExact=$(sed -n -r  "/${userExactPattern}/p"   "${fileName}" | wc -l)
+    local cntFuzzy=$(sed -n -r  "/${userFuzzyPattern}/p"   "${fileName}" | wc -l)
     if [ ${cntExact} -ne ${cntFuzzy} ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
 
     chmod u+w "${fileName}"
@@ -148,17 +148,19 @@ AddSudoPermission()
     return 0
 }
 
-# 修改sshd配置文件.
+# 修改sshd配置文件(无依赖).
 ModifySshdConfig()
 {
     local functionName="ModifySshdConfig"
     echo "========================================"
     echo "=> ${functionName}, begin..."
 
+    local sshPorts="$1"
+
     local fileName="/etc/ssh/sshd_config"
     if [ ! -f ${fileName} ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
 
-    # 禁止root用户用SSH登录
+    # 不允许root用户远程登录.
     local srcPermitRootLogin="^[# \t]*PermitRootLogin[ \t]+(yes|no)[ \t#]*.*$"
     local dstPermitRootLogin="PermitRootLogin no"
     sed -i -r "/${srcPermitRootLogin}/{x;//D;g;s//${dstPermitRootLogin}/g}"  "${fileName}"
@@ -171,10 +173,10 @@ ModifySshdConfig()
     if [ $? -ne 0 ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
 
     # 设置ssh端口
-    if [ -n "${sshPort}" ]; then
+    if [ -n "${sshPorts}" ]; then
         local srcStrPort="^[# \t]*Port[ \t]+[0-9]+[ \t#]*.*$"
         local dstStrPort=""
-        local portArr=(${sshPort})
+        local portArr=(${sshPorts})
         local portNum=
         for portNum in ${portArr[@]}; do
             if [ -z "${dstStrPort}" ]; then 
@@ -211,7 +213,7 @@ ChangeTimeZone()
 
     local zoneInfoFilePath="$1"
     # cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-    \cp -f "${zoneInfoFilePath}" "/etc/localtime"
+    \cp -p -f "${zoneInfoFilePath}" "/etc/localtime"
     if [ $? -ne 0 ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
     
     echo "=> ${functionName}, end."
@@ -223,7 +225,7 @@ ChangeTimeZone()
 CheckDependenciesAndSoOn
 [ $? -eq 0 ] && AddUserAndUpdatePassword "${userName}" "${userPassword}" "${gidGroup}" "${userdelPermission}"
 [ $? -eq 0 ] && AddSudoPermission "${userName}"
-[ $? -eq 0 ] && ModifySshdConfig
+[ $? -eq 0 ] && ModifySshdConfig  "${sshPorts}"
 [ $? -eq 0 ] && ChangeTimeZone "${zoneInfoFilePath}"
 
 ################################################################
