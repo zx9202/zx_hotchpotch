@@ -1,11 +1,11 @@
 #!/bin/sh
 ########################################################len=64##
-userName="t1"
-userPassword="t1pwd"
-gidGroup="root"
-userdelPermission=1  # 如果用户存在,允许删除这个用户.
-sshPorts="22 22222"  # 所有想开启的SSH端口,以空格间隔.
-zoneInfoFilePath="/usr/share/zoneinfo/Asia/Shanghai"
+UserName="u1"
+UserPassword="u1pwd"
+GidGroup=""
+UserdelPermission=1  # 如果用户存在,允许删除这个用户.
+SshPorts="22 22222"  # 所有想开启的SSH端口,以空格间隔.
+ZoneInfoFilePath="/usr/share/zoneinfo/Asia/Shanghai"
 ################################################################
 
 # 检查依赖和其他条件(无依赖).
@@ -222,10 +222,20 @@ ChangeTimeZone()
 
 ################################################################
 
+if [ "${UserName}" = "u1" ]; then
+    echo    "[WARN] Perhaps the current configuration is the default configuration."
+    echo    "[WARN] configuration: ${UserName}, ${UserPassword}, ${GidGroup}, ${UserdelPermission}, ${SshPorts}"
+    read -p "[WARN] press [Y] to continue: "  inputData
+    if [ "${inputData}" != 'Y' ] && [ "${inputData}" != 'y' ]; then
+        echo "INPUT FAULT. will exit."
+        exit 1
+    fi
+fi
+
 CheckDependenciesAndSoOn
-[ $? -eq 0 ] && AddUserAndUpdatePassword "${userName}" "${userPassword}" "${gidGroup}" "${userdelPermission}"
-[ $? -eq 0 ] && AddSudoPermission "${userName}"
-[ $? -eq 0 ] && ModifySshdConfig  "${sshPorts}"
-[ $? -eq 0 ] && ChangeTimeZone "${zoneInfoFilePath}"
+[ $? -eq 0 ] && AddUserAndUpdatePassword "${UserName}" "${UserPassword}" "${GidGroup}" "${UserdelPermission}"
+[ $? -eq 0 ] && AddSudoPermission "${UserName}"
+[ $? -eq 0 ] && ModifySshdConfig  "${SshPorts}"
+[ $? -eq 0 ] && ChangeTimeZone "${ZoneInfoFilePath}"
 
 ################################################################
