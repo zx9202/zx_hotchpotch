@@ -189,12 +189,12 @@ ModifySshdConfig()
         sed -i -r "/${srcStrPort}/{x;//D;g;s//${dstStrPort}/g}"  "${fileName}"
         if [ $? -ne 0 ]; then echo "[ERROR]:${LINENO}" 1>&2; return 1; fi
 
-        echo "####################"
-        echo "# Modified SSH port(${portArr[@]})"
-        echo "# You may need add Firewall Policy:"
-        echo "# iptables -I INPUT -p tcp --dport 22 -j ACCEPT"
-        echo "# service iptables save"
-        echo "####################"
+        echo -e "\033[49;27m #################### \033[0m"
+        echo -e "\033[49;27m # Modified SSH port(${portArr[@]}) \033[0m"
+        echo -e "\033[49;27m # You may need add Firewall Policy: \033[0m"
+        echo -e "\033[46;31m # iptables -I INPUT -p tcp --dport 22 -j ACCEPT \033[0m"
+        echo -e "\033[46;31m # service iptables save \033[0m"
+        echo -e "\033[49;27m #################### \033[0m"
     fi
 
     service sshd restart
