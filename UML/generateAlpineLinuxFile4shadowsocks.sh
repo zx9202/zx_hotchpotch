@@ -148,7 +148,7 @@ iface eth0 inet static
         netmask 255.255.255.0
         gateway 192.168.255.1
 EOF
-    # 准备 shadowsocks-go
+    # 准备 shadowsocks-go (不推荐, 1是很多method它不支持, 2是好久没发布release包了).
     SS_URL="https://github.com/shadowsocks/shadowsocks-go/releases/download/1.2.1/shadowsocks-server.tar.gz"
     mkdir                                  ${MOUNT_DIR}/etc/shadowsocks-go
     wget -c -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/shadowsocks-go/  shadowsocks-server
@@ -159,10 +159,14 @@ EOF
     "server":"0.0.0.0",
     "server_port":65535,
     "password":"shadowsocks-go",
-    "method":"rc4-md5",
+    "method":"aes-256-cfb",
     "timeout":300
 }
 EOF
+    # 准备 go-shadowsocks2 (推荐, 但是这个可执行文件是我自己根据源码编译的, 如果不信任, 可以选用上面的那个方式).
+    SS_URL="https://raw.githubusercontent.com/zx9202/zx_hotchpotch/master/go-shadowsocks2-bin/go-shadowsocks2.tar.xz"
+    mkdir                                  ${MOUNT_DIR}/etc/go-shadowsocks2-bin
+    wget -c -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/go-shadowsocks2-bin/  go-shadowsocks2
     # 创建一定大小的交换文件
     dd if=/dev/zero of=${MOUNT_DIR}/swapfile bs=1M count=64
     chmod 600          ${MOUNT_DIR}/swapfile
@@ -189,8 +193,12 @@ for IDX in \$(seq 10); do
     DRC=\$(ip route show exact 0/0 | grep -E "^default.* dev [^ ]+" -c)
     echo "PID=\$\$, IDX=\${IDX}, \$(date), DRC=\${DRC}" >> \${LOG_FILE}
     if [ \${DRC} -gt 0 ]; then
-        for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
-        /usr/bin/nohup /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json > /dev/null 2>&1 &
+        # If you use shadowsocks-server program:
+        #for NUM in \$(pidof shadowsocks-server); do kill -9 \${NUM}; done
+        #/usr/bin/nohup /etc/shadowsocks-go/shadowsocks-server -c /etc/shadowsocks-go/shadowsocks.json > /dev/null 2>&1 &
+        # If you use go-shadowsocks2 program:
+        for NUM in \$(pidof go-shadowsocks2); do kill -9 \${NUM}; done
+        /etc/go-shadowsocks2-bin/go-shadowsocks2 -s ss://chacha20-ietf-poly1305:go-shadowsocks2@:65535 -verbose > /dev/null 2>&1 &
         break
     else
         sleep 2
