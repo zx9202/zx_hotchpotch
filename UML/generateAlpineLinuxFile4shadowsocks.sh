@@ -1,13 +1,12 @@
 #! /bin/bash
 #======================================================================#
 # 注意: 脚本需要以 UTF-8 编码, 并以 LF 结尾.
-# yum -y install curl wget
 #======================================================================#
 # 此脚本是根据"OpenVZ下开启BBR拥塞控制"翻写的.
 # 网址: https://www.fanyueciyuan.info/jsxj/OpenVZ_BBR_UML_Alpine_Linux.html
 #======================================================================#
 
-wget -q -O- http://www.gov.cn/ > /dev/null  &&  curl -s http://www.gov.cn/ > /dev/null
+wget --help > /dev/null  &&  curl --help > /dev/null
 if [ $? -ne 0 ]; then
     echo "[ERROR]:${LINENO}, Please install wget,curl software." 1>&2
     exit 1
@@ -42,7 +41,7 @@ function CreateFileSystem(){
     dd  if=/dev/zero  of=${FILE_NAME}  bs=1M  count=${FILE_SIZE}
 
     # 在${FILE_NAME}上创建ext4格式的文件系统, 并将文件系统的volume标签设置为${LABELNAME}
-    mkfs.ext4  -L ${LABELNAME}  ${FILE_NAME}
+    mkfs.ext4 -F  -L ${LABELNAME}  ${FILE_NAME}
 }
 CreateFileSystem
 
@@ -166,7 +165,7 @@ EOF
     # 准备 go-shadowsocks2 (推荐, 但是这个可执行文件是我自己根据源码编译的, 如果不信任, 可以选用上面的那个方式).
     SS_URL="https://raw.githubusercontent.com/zx9202/zx_hotchpotch/master/go-shadowsocks2-bin/go-shadowsocks2.tar.xz"
     mkdir                                  ${MOUNT_DIR}/etc/go-shadowsocks2-bin
-    wget -c -q -O- ${SS_URL} | tar -zx  -C ${MOUNT_DIR}/etc/go-shadowsocks2-bin/  go-shadowsocks2
+    wget -c -q -O- ${SS_URL} | tar -Jx  -C ${MOUNT_DIR}/etc/go-shadowsocks2-bin/  go-shadowsocks2
     # 创建一定大小的交换文件
     dd if=/dev/zero of=${MOUNT_DIR}/swapfile bs=1M count=64
     chmod 600          ${MOUNT_DIR}/swapfile
@@ -207,7 +206,7 @@ done
 echo "PID=\$\$, IDX=\${IDX}, \$(date), DRC=\${DRC}, will exit..." >> \${LOG_FILE}
 EOF
     chmod +x ${MOUNT_DIR}/etc/local.d/shadowsocks.sh
-    # 为 shadowsocks 优化系统配置
+    # 为 shadowsocks 优化系统配置 ( https://shadowsocks.org/en/config/advanced.html )
     cat > ${MOUNT_DIR}/etc/sysctl.conf <<-EOF
 # max open files
 fs.file-max = 51200
