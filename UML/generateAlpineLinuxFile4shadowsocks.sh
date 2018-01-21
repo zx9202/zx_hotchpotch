@@ -76,10 +76,9 @@ function WriteBasicDataToImage(){
     # --update-cache      Update the repository cache
     # --allow-untrusted   Install packages with untrusted signature or no signature
     # --root DIR          Install packages to DIR
-    # --initdb            没有找到它的说明, 猜测为第一作者写错了, 同时我没有去掉它.
+    # --initdb            没有找到它的说明, 但是删掉它的话, 是会出现错误的.
     # add                 Add PACKAGEs to 'world' and install (or upgrade) them, while ensuring that all dependencies are met
-    #${TMPRY_DIR}/sbin/apk.static  --repository ${SPECIFIC_REPO}  --update-cache  --allow-untrusted  --root ${MOUNT_DIR} --initdb add alpine-base
-    ${TMPRY_DIR}/sbin/apk.static  --repository ${SPECIFIC_REPO}  --update-cache  --allow-untrusted  --root ${MOUNT_DIR} add alpine-base
+    ${TMPRY_DIR}/sbin/apk.static  --repository ${SPECIFIC_REPO}  --update-cache  --allow-untrusted  --root ${MOUNT_DIR} --initdb add alpine-base
     
     # 好像是,设置版本库的URL.
     printf  '%s\n' ${LATEST_STABLE}  >   ${MOUNT_DIR}/etc/apk/repositories
