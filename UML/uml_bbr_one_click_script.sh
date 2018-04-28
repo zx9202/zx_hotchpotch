@@ -63,6 +63,7 @@ function fun_start() {
 
 function fun_uninstall(){
     echo "action [uninstall] BEG..."
+    
     ip addr show ${IFNAME} > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         ip tuntap del ${IFNAME} mode tap
