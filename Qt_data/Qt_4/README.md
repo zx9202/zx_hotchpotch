@@ -1,0 +1,1 @@
+这个例子示范了 QDockWidget 的用法.
