@@ -30,6 +30,13 @@ void MainWindow::createUi()
         menuBar->addMenu(curMenu);
     }
     this->setMenuBar(menuBar);
+
+    QString styleSheet;
+    styleSheet += "QMainWindow { background : #B7B7B7 }";
+    styleSheet += "QMainWindow::separator:hover { background : #666666 }";
+    //styleSheet += "QMenuBar { background-color: #C7C7C7 }";
+    //styleSheet += "QStatusBar { background-color: #C9C9C9 }";
+    this->setStyleSheet(styleSheet);
 }
 
 QDockWidget* MainWindow::createDockWidget(QWidget* parent, const QString& title, bool doSetTitleBarWidget)

@@ -211,6 +211,12 @@ inline void ZxTitleBarWidget::createUi()
         layout->addWidget(btnClose);
     }
     this->setLayout(layout);
+
+    if (false) { //本来想用 setStyleSheet 代替 paintEvent 的, 结果发现不行.
+        QString styleSheet;
+        styleSheet += "QWidget { background : #DADADA }";
+        this->setStyleSheet(styleSheet);
+    }
 }
 
 inline void ZxTitleBarWidget::slotClose()
