@@ -1,5 +1,5 @@
 #include "my_dock_widget.h"
-#include "zx_title_bar_widget.h"
+#include "my_title_bar_widget.h"
 #include "mainwindow.h"
 #include <QMenuBar>
 #include <QPushButton>
