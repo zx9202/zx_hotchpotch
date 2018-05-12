@@ -1,3 +1,4 @@
+#include "my_dock_widget.h"
 #include "zx_title_bar_widget.h"
 #include "mainwindow.h"
 #include <QMenuBar>
@@ -9,6 +10,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    m_dockWidgetType=0;
     createUi();
 }
 
@@ -26,7 +28,7 @@ void MainWindow::createUi()
     if (true) {
         QMenu* curMenu = new QMenu(tr("操作一览"), this);
         curMenu->addAction(tr("增加DockWidget"), this, SLOT(slotAddDockWidget()));
-        curMenu->addAction(tr("定制TitleBarWidget"), this, SLOT(slotCustomizeTitleBarWidget()));
+        curMenu->addAction(tr("设置DockWidget类型"), this, SLOT(slotSetDockWidgetType()));
         menuBar->addMenu(curMenu);
     }
     this->setMenuBar(menuBar);
@@ -39,10 +41,27 @@ void MainWindow::createUi()
     this->setStyleSheet(styleSheet);
 }
 
-QDockWidget* MainWindow::createDockWidget(QWidget* parent, const QString& title, bool doSetTitleBarWidget)
+QDockWidget* MainWindow::createDockWidget(QWidget* parent, const QString& title, int type)
 {
-    QDockWidget* curDockWidget = new QDockWidget(title, parent);
-    {
+    QDockWidget* curDockWidget=nullptr;
+    if(type==0){
+        curDockWidget = new QDockWidget(title, parent);
+    }else if(type==1){
+        MyDockWidget* myObj = new MyDockWidget(title,parent);
+        QObject::connect(myObj, &MyDockWidget::sigContextMenuEvent,
+            [myObj](QContextMenuEvent*) {
+            QMenu *menu = new QMenu(myObj);
+            myObj->fillDefaultActions(menu);
+            menu->exec(myObj->cursor().pos());
+        });
+        curDockWidget=myObj;
+    }else if(type==2){
+        curDockWidget = new QDockWidget(title, parent);
+        MyTitleBarWidget* titleBarWidget = new MyTitleBarWidget(curDockWidget);
+        curDockWidget->setTitleBarWidget(titleBarWidget);
+    }
+
+    if(curDockWidget){
         QWidget* mWidget = new QWidget(curDockWidget);
         QVBoxLayout* vLayout = new QVBoxLayout(mWidget);
         if (true) {
@@ -56,24 +75,21 @@ QDockWidget* MainWindow::createDockWidget(QWidget* parent, const QString& title,
         //
         curDockWidget->setWidget(mWidget);
     }
-    if (doSetTitleBarWidget) {
-        ZxTitleBarWidget* titleBarWidget = new ZxTitleBarWidget(curDockWidget);
-        curDockWidget->setTitleBarWidget(titleBarWidget);
-    }
+
     return curDockWidget;
 }
 
 void MainWindow::slotAddDockWidget()
 {
     QString title; title.sprintf("第%d个页面", m_list.size() + 1);
-    QDockWidget* currDockWidget = createDockWidget(this, title, m_customizeTitleBarWidget);
+    QDockWidget* currDockWidget = createDockWidget(this, title ,m_dockWidgetType);
     this->addDockWidget(Qt::RightDockWidgetArea, currDockWidget);
     m_list.append(currDockWidget);
 }
 
-void MainWindow::slotCustomizeTitleBarWidget()
+void MainWindow::slotSetDockWidgetType()
 {
-    m_customizeTitleBarWidget = m_customizeTitleBarWidget ? false : true;
-    QString message = QString("已经设置为: [%1]定制TitleBarWidget").arg(m_customizeTitleBarWidget);
-    QMessageBox::information(this, "", message);
+    m_dockWidgetType =(m_dockWidgetType+1)%3;
+    QString message = QString(tr("当前值=[%1]")).arg(m_dockWidgetType);
+    QMessageBox::information(this, tr("设置DockWidget类型"), message);
 }

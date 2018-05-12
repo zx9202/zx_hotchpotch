@@ -1,16 +1,16 @@
-#ifndef ZX_TITLE_BAR_WIDGET_H
-#define ZX_TITLE_BAR_WIDGET_H
+#ifndef MY_TITLE_BAR_WIDGET_H
+#define MY_TITLE_BAR_WIDGET_H
 
 #include <QWidget>
 #include <QLabel>
 
-class ZxTitleBarWidget :public QWidget
+class MyTitleBarWidget :public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ZxTitleBarWidget(QWidget *parent = Q_NULLPTR);
-    virtual ~ZxTitleBarWidget();
+    explicit MyTitleBarWidget(QWidget *parent = Q_NULLPTR);
+    virtual ~MyTitleBarWidget();
 
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
@@ -124,15 +124,15 @@ inline void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
 
 //////////////////////////////////////////////////////////////////////////
 
-#if 1 //ZxTitleBarWidget,BEG.
+#if 1 //MyTitleBarWidget,BEG.
 #include <QHBoxLayout>
 #include <QDockWidget>
 
-inline ZxTitleBarWidget::ZxTitleBarWidget(QWidget *parent /* = Q_NULLPTR */) :QWidget(parent), m_label(nullptr) { createUi(); }
+inline MyTitleBarWidget::MyTitleBarWidget(QWidget *parent /* = Q_NULLPTR */) :QWidget(parent), m_label(nullptr) { createUi(); }
 
-inline ZxTitleBarWidget::~ZxTitleBarWidget() {}
+inline MyTitleBarWidget::~MyTitleBarWidget() {}
 
-inline void ZxTitleBarWidget::paintEvent(QPaintEvent *event)
+inline void MyTitleBarWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     QRect rect = this->rect();
@@ -156,7 +156,7 @@ inline void ZxTitleBarWidget::paintEvent(QPaintEvent *event)
     QWidget::paintEvent(event);
 }
 
-inline void ZxTitleBarWidget::createUi()
+inline void MyTitleBarWidget::createUi()
 {
     QHBoxLayout* layout = new QHBoxLayout(this);
 
@@ -219,42 +219,42 @@ inline void ZxTitleBarWidget::createUi()
     }
 }
 
-inline void ZxTitleBarWidget::slotClose()
+inline void MyTitleBarWidget::slotClose()
 {
     QWidget* nativeParent = qobject_cast<QWidget*>(this->parent());
     if (nativeParent) { nativeParent->close(); }
 }
 
-inline void ZxTitleBarWidget::slotShowMaximized()
+inline void MyTitleBarWidget::slotShowMaximized()
 {
     QWidget* nativeParent = qobject_cast<QWidget*>(this->parent());
     if (nativeParent) { nativeParent->showMaximized(); }
 }
 
-inline void ZxTitleBarWidget::slotShowMinimized()
+inline void MyTitleBarWidget::slotShowMinimized()
 {
     QWidget* nativeParent = qobject_cast<QWidget*>(this->parent());
     if (nativeParent) { nativeParent->showMinimized(); }
 }
 
-inline void ZxTitleBarWidget::slotShowNormal()
+inline void MyTitleBarWidget::slotShowNormal()
 {
     QWidget* nativeParent = qobject_cast<QWidget*>(this->parent());
     if (nativeParent) { nativeParent->showNormal(); }
 }
 
-inline void ZxTitleBarWidget::slotSetFloating()
+inline void MyTitleBarWidget::slotSetFloating()
 {
     QDockWidget* nativeParent = qobject_cast<QDockWidget*>(this->parent());
     if (nativeParent) { nativeParent->setFloating(!nativeParent->isFloating()); }
 }
 
-inline void ZxTitleBarWidget::slotHide()
+inline void MyTitleBarWidget::slotHide()
 {
     QDockWidget* nativeParent = qobject_cast<QDockWidget*>(this->parent());
     QWidget* widgetOfDockWidget = nativeParent ? nativeParent->widget() : nullptr;
     if (widgetOfDockWidget) { widgetOfDockWidget->isVisible() ? widgetOfDockWidget->hide() : widgetOfDockWidget->show(); }
 }
-#endif//ZxTitleBarWidget,END.
+#endif//MyTitleBarWidget,END.
 
-#endif//ZX_TITLE_BAR_WIDGET_H
+#endif//MY_TITLE_BAR_WIDGET_H

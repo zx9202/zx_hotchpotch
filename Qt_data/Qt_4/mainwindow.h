@@ -14,15 +14,15 @@ public:
 
 private:
     void createUi();
-    static QDockWidget* createDockWidget(QWidget* parent, const QString& title, bool doSetTitleBarWidget);
+    static QDockWidget* createDockWidget(QWidget* parent, const QString& title, int type);
 
 private Q_SLOTS:
     void slotAddDockWidget();
-    void slotCustomizeTitleBarWidget();
+    void slotSetDockWidgetType();
 
 private:
     QList<QDockWidget*> m_list;
-    bool m_customizeTitleBarWidget;
+    int m_dockWidgetType;
 };
 
 #endif // MAINWINDOW_H

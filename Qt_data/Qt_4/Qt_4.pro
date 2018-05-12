@@ -29,4 +29,5 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
-    zx_title_bar_widget.h
+    zx_title_bar_widget.h \
+    my_dock_widget.h
