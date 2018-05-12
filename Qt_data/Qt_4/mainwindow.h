@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDockWidget>
+#include <QMap>
 
 class MainWindow : public QMainWindow
 {
