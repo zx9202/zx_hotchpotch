@@ -10,19 +10,21 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    m_dockWidgetType=0;
+    m_widgetIndex = 0;
+    m_widgets.clear();
+    m_dockWidgetType = 0;
     createUi();
 }
 
 MainWindow::~MainWindow()
 {
-    m_list.clear();
+    m_widgets.clear();
 }
 
 void MainWindow::createUi()
 {
     this->setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks | QMainWindow::GroupedDragging);
-    this->setAttribute(Qt::WA_DeleteOnClose, true);
+    this->setAttribute(Qt::WA_DeleteOnClose, true);  // MainWindow在close的时候就destory.
 
     QMenuBar* menuBar = new QMenuBar(this);
     if (true) {
@@ -43,25 +45,27 @@ void MainWindow::createUi()
 
 QDockWidget* MainWindow::createDockWidget(QWidget* parent, const QString& title, int type)
 {
-    QDockWidget* curDockWidget=nullptr;
-    if(type==0){
+    QDockWidget* curDockWidget = nullptr;
+    if (type == 0) {
         curDockWidget = new QDockWidget(title, parent);
-    }else if(type==1){
-        MyDockWidget* myObj = new MyDockWidget(title,parent);
+    }
+    else if (type == 1) {
+        MyDockWidget* myObj = new MyDockWidget(title, parent);
         QObject::connect(myObj, &MyDockWidget::sigContextMenuEvent,
             [myObj](QContextMenuEvent*) {
             QMenu *menu = new QMenu(myObj);
             myObj->fillDefaultActions(menu);
             menu->exec(myObj->cursor().pos());
         });
-        curDockWidget=myObj;
-    }else if(type==2){
+        curDockWidget = myObj;
+    }
+    else if (type == 2) {
         curDockWidget = new QDockWidget(title, parent);
         MyTitleBarWidget* titleBarWidget = new MyTitleBarWidget(curDockWidget);
         curDockWidget->setTitleBarWidget(titleBarWidget);
     }
 
-    if(curDockWidget){
+    if (curDockWidget) {
         QWidget* mWidget = new QWidget(curDockWidget);
         QVBoxLayout* vLayout = new QVBoxLayout(mWidget);
         if (true) {
@@ -81,15 +85,37 @@ QDockWidget* MainWindow::createDockWidget(QWidget* parent, const QString& title,
 
 void MainWindow::slotAddDockWidget()
 {
-    QString title; title.sprintf("第%d个页面", m_list.size() + 1);
-    QDockWidget* currDockWidget = createDockWidget(this, title ,m_dockWidgetType);
+    QString title; title.sprintf("index=%d, widgets=%d", m_widgetIndex + 1, m_widgets.size() + 1);
+    QDockWidget* currDockWidget = createDockWidget(this, title, m_dockWidgetType);
+    title.sprintf("第%d个页面", m_widgetIndex + 1);
+    currDockWidget->setWindowTitle(title);
+    currDockWidget->setAttribute(Qt::WA_DeleteOnClose, true);
+    QObject::connect(currDockWidget, SIGNAL(destroyed(QObject*)), this, SLOT(slotDestroyed(QObject*)));
     this->addDockWidget(Qt::RightDockWidgetArea, currDockWidget);
-    m_list.append(currDockWidget);
+
+    m_widgetIndex += 1;
+    m_widgets[title] = currDockWidget;
 }
 
 void MainWindow::slotSetDockWidgetType()
 {
-    m_dockWidgetType =(m_dockWidgetType+1)%3;
+    m_dockWidgetType = (m_dockWidgetType + 1) % 3;
     QString message = QString(tr("当前值=[%1]")).arg(m_dockWidgetType);
     QMessageBox::information(this, tr("设置DockWidget类型"), message);
+}
+
+void MainWindow::slotDestroyed(QObject *obj)
+{
+    QWidget* objWidget = qobject_cast<QWidget*>(obj);
+    if (objWidget)
+    {
+        QString title = objWidget->windowTitle();
+        auto it = m_widgets.find(title);
+        if (m_widgets.end() != it)
+        {
+            m_widgets.erase(it);
+        }
+    }
+    QDockWidget* objDockWidget = qobject_cast<QDockWidget*>(obj);//永远为0x0
+    this->removeDockWidget(objDockWidget);
 }

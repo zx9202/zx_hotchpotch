@@ -19,9 +19,11 @@ private:
 private Q_SLOTS:
     void slotAddDockWidget();
     void slotSetDockWidgetType();
+    void slotDestroyed(QObject *obj);
 
 private:
-    QList<QDockWidget*> m_list;
+    int m_widgetIndex;
+    QMap<QString, QDockWidget*> m_widgets;
     int m_dockWidgetType;
 };
 
